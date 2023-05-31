@@ -7,6 +7,10 @@ android {
     namespace 'com.example.fashionday'
     compileSdk 33
 
+    buildFeatures {
+        viewBinding true
+    }
+
     defaultConfig {
         applicationId "com.example.fashionday"
         minSdk 24
