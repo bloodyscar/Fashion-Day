@@ -9,4 +9,10 @@
     <string name="your_full_name">Your full name</string>
     <string name="search">Search</string>
     <string name="best_today">Best Today</string>
+    <string name="gender">Choose Gender</string>
+    <string name="upload">Upload</string>
+    <string-array name="gender">
+        <item>Men</item>
+        <item>Women</item>
+    </string-array>
 </resources>

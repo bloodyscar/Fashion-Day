@@ -6,6 +6,7 @@ import android.text.method.LinkMovementMethod
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.example.fashionday.databinding.ActivityLoginBinding
+import com.example.fashionday.ui.home.HomeActivity
 
 
 class LoginActivity : AppCompatActivity() {
