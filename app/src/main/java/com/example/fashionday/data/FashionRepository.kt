@@ -5,11 +5,15 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
 import com.example.fashionday.data.response.BestTodayResponse
 import com.example.fashionday.data.response.DataItem
+import com.example.fashionday.data.response.LoginResponse
+import com.example.fashionday.data.response.RegisterResponse
 import com.example.fashionday.data.response.ResultPredictionResponse
 import com.example.fashionday.data.response.SearchFashionResponse
 import com.example.fashionday.data.retrofit.ApiService
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import org.json.JSONException
+import org.json.JSONObject
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -35,7 +39,13 @@ class FashionRepository(private val apiService: ApiService) {
                     }
 
                 } else {
-                    Log.d("A2DABWANG", "ERRRPR BWANG")
+                    val errorBody = response.errorBody()?.string()
+                    val errorMessage = try {
+                        JSONObject(errorBody).getString("response")
+                    } catch (e: JSONException) {
+                        "Unknown error"
+                    }
+                    listBest.value = Result.Error(errorMessage)
                 }
             }
 
@@ -81,6 +91,90 @@ class FashionRepository(private val apiService: ApiService) {
         })
 
         return listSearch
+    }
+
+    fun postRegister(
+        username: RequestBody,
+        email: RequestBody,
+        password: RequestBody,
+    ): LiveData<Result<RegisterResponse>> {
+        val resultRegister = MediatorLiveData<Result<RegisterResponse>>()
+
+        resultRegister.postValue(Result.Loading)
+
+        var client = apiService.postRegister(username, email, password)
+
+        client.enqueue(object : Callback<RegisterResponse> {
+            override fun onResponse(
+                call: Call<RegisterResponse>,
+                response: Response<RegisterResponse>
+            ) {
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    Log.d("ADABWANG", responseBody.toString())
+                    if (responseBody != null) {
+                        resultRegister.value = Result.Success(responseBody)
+                    }
+
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val errorMessage = try {
+                        JSONObject(errorBody).getString("response")
+                    } catch (e: JSONException) {
+                        "Unknown error"
+                    }
+                    resultRegister.value = Result.Error(errorMessage)
+
+                }
+            }
+
+            override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
+                Log.d("A2DABWANG", "ERRRPR BWANG")
+            }
+
+        })
+
+        return resultRegister
+    }
+
+    fun postLogin(
+        username: String,
+        password: String,
+    ): LiveData<Result<LoginResponse>> {
+        val resultLogin = MediatorLiveData<Result<LoginResponse>>()
+
+        resultLogin.postValue(Result.Loading)
+
+        var client = apiService.postLogin(username, password)
+
+        client.enqueue(object: Callback<LoginResponse>{
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+                    Log.d("ADABWANG", responseBody.toString())
+                    if (responseBody != null) {
+                        resultLogin.value = Result.Success(responseBody)
+                    }
+
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val errorMessage = try {
+                        JSONObject(errorBody).getString("response")
+                    } catch (e: JSONException) {
+                        "Unknown error"
+                    }
+                    resultLogin.value = Result.Error(errorMessage)
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                Log.d("A2DABWANG", t.message.toString())
+
+            }
+
+        })
+
+        return resultLogin
     }
 
     companion object {

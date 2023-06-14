@@ -1,28 +1,35 @@
 package com.example.fashionday.ui.upload
 
+import android.Manifest
 import android.content.Intent
 import android.content.Intent.ACTION_GET_CONTENT
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Log
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBar
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
-import com.airbnb.lottie.LottieAnimationView
 import com.example.fashionday.R
+import com.example.fashionday.createCustomTempFile
 import com.example.fashionday.data.Result
 import com.example.fashionday.data.ViewModelFactory
 import com.example.fashionday.data.response.DataItem
 import com.example.fashionday.databinding.ActivityUploadFileBinding
+import com.example.fashionday.exif
 import com.example.fashionday.reduceFileImage
-import com.example.fashionday.ui.BestTodayAdapter
 import com.example.fashionday.uriToFile
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.launch
@@ -33,13 +40,14 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 
-class UploadFileActivity : AppCompatActivity() {
+class UploadFileActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
     private lateinit var binding: ActivityUploadFileBinding
     private val factory: ViewModelFactory = ViewModelFactory.getInstance(this)
     private val viewModel: UploadViewModel by viewModels {
         factory
     }
     private var getFile: File? = null
+    private lateinit var itemSelected : String
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,6 +60,7 @@ class UploadFileActivity : AppCompatActivity() {
         binding.backBtn.setOnClickListener {
             finish()
         }
+        spinGender.onItemSelectedListener = this
         binding.lottieAnimationView.visibility = View.GONE
 
         val actionBar: ActionBar? = supportActionBar
@@ -64,6 +73,7 @@ class UploadFileActivity : AppCompatActivity() {
         binding.tvPred.visibility = View.GONE
         binding.tvRPrediction.visibility = View.GONE
 
+
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter.createFromResource(
             this,
@@ -75,6 +85,8 @@ class UploadFileActivity : AppCompatActivity() {
             // Apply the adapter to the spinner
             spinGender.adapter = adapter
         }
+
+
 
         binding.ivEmpty.setOnClickListener {
             showBottomSheetDialog()
@@ -90,7 +102,6 @@ class UploadFileActivity : AppCompatActivity() {
         if (getFile != null) {
             lifecycleScope.launch {
                 var file = reduceFileImage(getFile as File)
-                val gender = "women".toRequestBody("text/plain".toMediaType())
                 val requestImageFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
                 val gambar: MultipartBody.Part = MultipartBody.Part.createFormData(
                     "gambar",
@@ -99,7 +110,7 @@ class UploadFileActivity : AppCompatActivity() {
                 )
                 viewModel.postSearchImage(
                     gambar,
-                    gender,
+                    itemSelected.toRequestBody("text/plain".toMediaType()),
                 ).observe(this@UploadFileActivity) { result ->
                     if (result != null) {
                         when (result) {
@@ -148,6 +159,43 @@ class UploadFileActivity : AppCompatActivity() {
         }
     }
 
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(baseContext, it) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private lateinit var currentPhotoPath: String
+    private val launcherIntentCamera = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (it.resultCode == RESULT_OK) {
+            val myFile = File(currentPhotoPath)
+            getFile = myFile
+            val result = exif(currentPhotoPath)
+
+            binding?.apply {
+                ivEmpty.setImageBitmap(result)
+            }
+
+
+        }
+    }
+
+    private fun startTakePhoto() {
+        val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        intent.resolveActivity(packageManager)
+
+        createCustomTempFile(application).also {
+            val photoURI: Uri = FileProvider.getUriForFile(
+                this@UploadFileActivity,
+                "com.example.fashionday",
+                it
+            )
+            currentPhotoPath = it.absolutePath
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            launcherIntentCamera.launch(intent)
+        }
+    }
+
     fun String.toTitleCase(): String {
         return split(" ").joinToString(" ") { it.capitalize() }
     }
@@ -168,6 +216,23 @@ class UploadFileActivity : AppCompatActivity() {
 
         folder?.setOnClickListener {
             startGallery()
+            bottomSheetDialog.dismiss();
+        }
+
+        camera?.setOnClickListener {
+            if (!allPermissionsGranted()) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    REQUIRED_PERMISSIONS,
+                    REQUEST_CODE_PERMISSIONS
+                )
+            }
+            if (allPermissionsGranted()) {
+                startTakePhoto()
+            } else {
+                Toast.makeText(this@UploadFileActivity, "Permission Denied", Toast.LENGTH_SHORT)
+                    .show()
+            }
             bottomSheetDialog.dismiss();
         }
     }
@@ -191,5 +256,19 @@ class UploadFileActivity : AppCompatActivity() {
                 binding.ivEmpty.setImageURI(uri)
             }
         }
+    }
+
+    companion object {
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+        private const val REQUEST_CODE_PERMISSIONS = 10
+    }
+
+    override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+        val result = parent?.getItemAtPosition(position).toString()
+        itemSelected = result
+        Toast.makeText(this, itemSelected, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onNothingSelected(p0: AdapterView<*>?) {
     }
 }

@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context=".LoginActivity">
+    tools:context=".ui.login.LoginActivity">
 
 
     <FrameLayout
@@ -66,14 +66,15 @@
                 app:hintEnabled="false"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView"
-                app:startIconDrawable="@drawable/outline_email_24">
+                app:startIconDrawable="@drawable/outline_person_24">
 
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtUsernameLogin"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:hint="@string/email"
-                    android:inputType="textEmailAddress" />
+                    android:hint="@string/username"
+                    android:inputType="text" />
 
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -91,6 +92,7 @@
 
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtPassLogin"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:hint="@string/password"
@@ -111,19 +113,23 @@
 
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                app:layout_constraintTop_toBottomOf="@+id/btnLogin"
-                android:orientation="vertical"
+                android:layout_height="wrap_content"
                 android:gravity="bottom"
-               >
+                android:orientation="vertical"
+
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/btnLogin"
+                app:layout_constraintVertical_bias="1.0"
+                tools:layout_editor_absoluteX="20dp">
+
                 <TextView
                     android:id="@+id/tvDont"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="@string/don_t_have_account"
-                    android:textSize="14sp"
-                    android:textColor="#C3C3C3" />
+                    android:textColor="#C3C3C3"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tvRegister"
@@ -131,10 +137,10 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/poppins_medium"
                     android:gravity="center"
+                    android:linksClickable="true"
                     android:text="@string/register_here"
                     android:textColor="#0085FF"
                     android:textSize="14sp"
-                    android:linksClickable="true"
                     app:layout_constraintTop_toBottomOf="@+id/tvDont" />
 
 

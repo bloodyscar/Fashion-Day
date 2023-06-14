@@ -3,6 +3,7 @@ package com.example.fashionday.ui.home
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.viewModels
@@ -31,6 +32,8 @@ class HomeActivity : AppCompatActivity() {
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        binding.homeLottieAnimationView.visibility = View.GONE
+
         binding.rvBest.setHasFixedSize(true)
 
         binding.btnCamera.setOnClickListener{
@@ -49,16 +52,18 @@ class HomeActivity : AppCompatActivity() {
             if (result != null) {
                 when (result) {
                     is Result.Loading -> {
+                        binding.homeLottieAnimationView.visibility = View.VISIBLE
                         Log.d("L0Ading", "Loading....")
                     }
                     is Result.Success -> {
+                        binding.homeLottieAnimationView.visibility = View.GONE
                         val data = result.data
                         showRecyclerList(data)
                     }
                     is Result.Error -> {
                         Toast.makeText(
-                            this,
-                            "ERRORRRRR",
+                            this@HomeActivity,
+                            result.error,
                             Toast.LENGTH_SHORT
                         ).show()
                     }
