@@ -9,20 +9,25 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.ActionBar
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
+import com.bumptech.glide.Glide
 import com.example.fashionday.R
+import com.example.fashionday.RvClickListener
 import com.example.fashionday.createCustomTempFile
 import com.example.fashionday.data.Result
 import com.example.fashionday.data.ViewModelFactory
@@ -40,7 +45,7 @@ import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 
-class UploadFileActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener {
+class UploadFileActivity : AppCompatActivity(), AdapterView.OnItemSelectedListener, RvClickListener {
     private lateinit var binding: ActivityUploadFileBinding
     private val factory: ViewModelFactory = ViewModelFactory.getInstance(this)
     private val viewModel: UploadViewModel by viewModels {
@@ -140,7 +145,7 @@ class UploadFileActivity : AppCompatActivity(), AdapterView.OnItemSelectedListen
                                 binding.lottieAnimationView.visibility = View.GONE
                                 Toast.makeText(
                                     this@UploadFileActivity,
-                                    "ERRORRRRR",
+                                    "Error: ${result.error}",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }
@@ -270,5 +275,16 @@ class UploadFileActivity : AppCompatActivity(), AdapterView.OnItemSelectedListen
     }
 
     override fun onNothingSelected(p0: AdapterView<*>?) {
+    }
+
+    override fun onItemClicked(view: View, data: DataItem) {
+        val builder = AlertDialog.Builder(this@UploadFileActivity)
+        Log.d("ON2Click", "onItemClicked")
+        val inflater = LayoutInflater.from(this)
+        val dialoglayout = inflater.inflate(R.layout.custom_dialog, null)
+        var imageView = dialoglayout.findViewById<ImageView>(R.id.ivCustom)
+        Glide.with(this).load(data.photo).into(imageView)
+        builder.setView(dialoglayout);
+        builder.show();
     }
 }

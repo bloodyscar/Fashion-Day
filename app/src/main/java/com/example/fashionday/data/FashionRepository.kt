@@ -51,6 +51,7 @@ class FashionRepository(private val apiService: ApiService) {
 
             override fun onFailure(call: Call<BestTodayResponse>, t: Throwable) {
                 Log.e("A2DABWANG", "onFailure: ${t.message}")
+                listBest.value = t.message?.let { Result.Error(it) }
             }
         })
 
@@ -80,12 +81,19 @@ class FashionRepository(private val apiService: ApiService) {
                     }
 
                 } else {
-                    Log.d("A2DABWANG", "ERRRPR BWANG")
+                    val errorBody = response.errorBody()?.string()
+                    val errorMessage = try {
+                        JSONObject(errorBody).getString("response")
+                    } catch (e: JSONException) {
+                        "Unknown error"
+                    }
+                    listSearch.value = Result.Error(errorMessage)
+
                 }
             }
 
             override fun onFailure(call: Call<ResultPredictionResponse>, t: Throwable) {
-                Log.d("A2DABWANG", t.message.toString())
+                listSearch.value = t.message?.let { Result.Error(it) }
             }
 
         })
@@ -129,7 +137,7 @@ class FashionRepository(private val apiService: ApiService) {
             }
 
             override fun onFailure(call: Call<RegisterResponse>, t: Throwable) {
-                Log.d("A2DABWANG", "ERRRPR BWANG")
+                resultRegister.value = t.message?.let { Result.Error(it) }
             }
 
         })
@@ -168,7 +176,7 @@ class FashionRepository(private val apiService: ApiService) {
             }
 
             override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
-                Log.d("A2DABWANG", t.message.toString())
+                resultLogin.value = t.message?.let { Result.Error(it) }
 
             }
 

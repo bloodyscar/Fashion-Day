@@ -53,7 +53,7 @@ class RegisterActivity : AppCompatActivity() {
                                 binding.btnRegister.text = "Sign up"
                                 Toast.makeText(
                                     this@RegisterActivity,
-                                    result.error,
+                                    "Error: ${result.error}",
                                     Toast.LENGTH_SHORT
                                 ).show()
                             }

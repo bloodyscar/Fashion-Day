@@ -61,7 +61,7 @@ class LoginActivity : AppCompatActivity() {
                                     binding.btnLogin.text = "Login"
                                     Toast.makeText(
                                         this@LoginActivity,
-                                        result.error,
+                                        "Error: ${result.error}",
                                         Toast.LENGTH_SHORT
                                     ).show()
                                 }
